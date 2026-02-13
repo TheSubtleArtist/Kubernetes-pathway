@@ -1,0 +1,718 @@
+# LSF 158 Introduction to Kubernetes
+
+## 02. From Monolith the Microservices
+
+### The Legacy Monolith
+
+#### the monolith application
+
+sedimented layers of features and redundant logic translated into thousands of lines of code, written in a single, not so modern programming language, based on outdated software architecture patterns and principles.  
+
+#### new features and improvements
+
+add to code complexity  
+loading, compiling, and building times increase with every new update  
+some ease in administration as the application is running on a single server, ideally a Virtual Machine or a Mainframe.  
+
+#### expensive taste in hardware
+
+a large, single piece of software which continuously grows  
+has to run on a single system which has to satisfy its compute, memory, storage, and networking requirements  
+complex, pricy, challenging to procure.  
+
+#### scaling
+
+almost impossible  
+hardcoded number of connections and operations  
+achieved by manually deploying a new instance on another server, typically behind a load balancing appliance - another pricey solution.  
+
+#### upgrading, patching, migrating
+
+downtime is inevitable  
+maintenance windows planned well in advance as disruptions in service are expected to impact clients  
+third party solutions to minimize downtime to customers by setting up monolith applications in a highly available active/passive configuration  
+third party solutions introduce new challenges for system engineers to keep all systems at the same patch level and may introduce new possible licensing costs.  
+
+### The Modern Microservice
+
+#### deployed individually
+
+separate servers provisioned with fewer resources  
+ only what is required by each service and the host system itself  
+lowers compute resource expenses.  
+
+#### Architecture
+
+aligned with Event-driven Architecture and Service-Oriented Architecture (SOA) principles  
+complex applications are composed of small independent processes which communicate with each other through Application Programming Interfaces (APIs) over a network  
+APIs allow access by other internal services of the same application or external, third-party services and applications.  
+
+#### Development
+
+developed and written in a modern programming language  
+languages is selected as best suitable for the type of service and its business function  
+flexibility when matching microservices with specific hardware when required, allowing deployments on inexpensive commodity hardware.  
+
+#### Scalability
+
+each microservice can be scaled individually, either manually or automated through demand-based autoscaling.  
+
+#### Upgrades and Patching
+
+virtually no downtime or service disruption to clients  
+upgrades are rolled out seamlessly - one service at a time, rather than having to recompile, rebuild and restart an entire monolithic application  
+businesses are able to develop and roll out new features and updates a lot faster, in an agile approach, having separate teams focusing on separate features, thus being more productive and cost-effective.  
+
+### Refactoring  
+
+migrating a decades-old application to the cloud through refactoring poses serious challenges and the enterprise faces the refactoring approach dilemma: a "Big-bang" approach or an incremental refactoring.
+
+#### "Big-bang" approach
+
+postponing the development and implementation of any new features
+breaking the core of the business, the monolith.
+
+#### Incremental refactoring approach
+
+new features are developed and implemented as modern microservices  
+able to communicate with the monolith through APIs, without appending to the monolith's code  
+features are refactored out of the monolith which slowly fades away  
+offers a gradual transition from a legacy monolith to modern microservices architecture  
+allows for phased migration of application features into the cloud.  
+
+### other considerations
+
+Which business components become distributed microservices  
+how to decouple the databases from the application to separate data complexity from application logic  
+how to test the new microservices and their dependencies
+
+The refactoring phase slowly transforms the monolith into a cloud-native application which takes full advantage of cloud features, by coding in new programming languages and applying modern architectural patterns. Through refactoring, a legacy monolith application receives a second chance at life - to live on as a modular system adapted to fully integrate with today's fast-paced cloud automation tools and services.
+
+### Challenges
+
+Not all monoliths are perfect candidates for refactoring  
+some may not even "survive" such a modernization phase
+
+#### issues to consider
+
+- legacy Mainframe based system, written in older programming languages - Cobol or Assembler, it may be more economical to just re-build it from the ground up as a cloud native application
+- A poorly designed legacy application should be re-designed and re-built from scratch following modern architectural patterns for microservices and even containers  
+- Applications tightly coupled with data stores are also poor candidates for refactoring.
+- design mechanisms and/or tools to keep alive all the decoupled modules to ensure application resiliency as a whole.
+
+***Choosing runtimes***  
+If deploying many modules on a single physical or virtual server, chances are that different libraries and runtime environments may conflict with one another, causing errors and failures  
+This forces deployments of single modules per servers in order to separate their dependencies - not an economical way of resource management, and no real segregation of libraries and runtimes, as each server also has an underlying Operating System running with its libraries, thus consuming server resources - at times the OS consuming more resources than the application module itself.  
+
+Application containers came along providing encapsulated lightweight runtime environments for application modules. Containers promised consistent software environments for developers, testers, all the way from Development to Production  
+Wide support of containers ensured application portability from physical bare-metal to Virtual Machines, but this time with multiple applications deployed on the very same server, each running in their own execution environments isolated from one another, thus avoiding conflicts, errors, and failures  
+Other features of containerized application environments are higher server utilization, individual module scalability, flexibility, interoperability and easy integration with automation tools.
+
+## 03. Container Orchestration
+
+### What are containers
+
+application-centric method to deliver high-performing, scalable applications on any infrastructure
+deliver microservices by providing portable, isolated virtual environments for applications to run without interference from other running applications
+
+![ContainerDeployment](assets/lsf158-101-ContainerDeployment.png)  
+
+***Microservices***
+lightweight applications written in various modern programming languages, with specific dependencies, libraries and environmental requirements  
+ensure that an application has everything it needs to run successfully it is packaged together with its dependencies  
+
+Containers encapsulate microservices and their dependencies but do not run them directly  
+Containers run container images  
+
+A container image bundles the application along with its runtime, libraries, and dependencies  
+represents the source of a container deployed to offer an isolated executable environment for the application  
+Containers can be deployed from a specific image on many platforms, such as workstations, Virtual Machines, public cloud, etc  
+
+### What is Container Orchestration
+
+***In Development (Dev) environments:*** running containers on a single host for development and testing of applications is suitable option  
+***Quality Assurance (QA) and Production (Prod):*** no longer a viable to to run on a single host because the applications and services need to meet specific requirements:
+
+- Fault-tolerance
+- On-demand scalability
+- Optimal resource usage
+- Auto-discovery to automatically discover and communicate with each other
+- Accessibility from the outside world
+- Seamless updates/rollbacks without any downtime.
+
+#### Container orchestrators
+
+tools which group systems together to form clusters where containers' deployment and management is automated at scale while meeting the requirements
+clustered systems confer the advantages of distributed systems, such as increased performance, cost efficiency, reliability, workload distribution, and reduced latency
+
+With enterprises containerizing their applications and moving them to the cloud, there is a growing demand for container orchestration solutions. While there are many solutions available, some are mere re-distributions of well-established container orchestration tools, enriched with features and, sometimes, with certain limitations in flexibility.  
+
+Although not exhaustive, the list below provides a few different container orchestration tools and services available today:  
+
+***Amazon Elastic Container Service (ECS)*** is a hosted service provided by Amazon Web Services (AWS) to run containers at scale on its infrastructure.
+***Azure Container Instance (ACI)*** is a basic container orchestration service provided by Microsoft Azure.
+***Azure Service Fabric*** is an open source container orchestrator provided by Microsoft Azure.
+***Kubernetes*** is an open source orchestration tool, originally started by Google, today part of the Cloud Native Computing Foundation (CNCF) project.
+***Nomad*** is the container and workload orchestrator provided by HashiCorp.
+***Docker Swarm*** is a container orchestrator provided by Docker, Inc. It is part of Docker Engine.
+
+### Why Use Container Orchestrators
+
+orchestrators make things much easier for users especially when it comes to managing hundreds or thousands of containers running on a global infrastructure.
+
+- Group hosts together while creating a cluster, in order to leverage the benefits of distributed systems
+- Schedule containers to run on hosts in the cluster based on resources availability.
+- Enable containers in a cluster to communicate with each other regardless of the host they are deployed to in the cluster.
+- Bind containers and storage resources.
+- Group sets of similar containers and bind them to load-balancing constructs to simplify access to containerized applications by creating an interface, a level of abstraction between the containers and the client.
+- Manage and optimize resource usage.
+- Allow for implementation of policies to secure access to applications running inside containers.
+
+container orchestrators are an obvious choice when it comes to managing containerized applications at scale  
+
+### Where to deploy container orchestrators
+
+#### deployed on the infrastructure of our choice
+
+bare metal, Virtual Machines, on-premises, on public and hybrid clouds  
+
+***Kubernetes***  
+can be deployed on a workstation
+deployed with or without an isolation layer such as a local hypervisor or container runtime
+inside a company's data center, in the cloud on AWS Elastic Compute Cloud (EC2) instances, Google Compute Engine (GCE) VMs, DigitalOcean Droplets, IBM Virtual Servers, OpenStack, etc.  
+
+***turnkey cloud solutions***  
+allow production Kubernetes clusters to be installed, with only a few commands, on top of cloud Infrastructures-as-a-Service  
+paves the way for the managed container orchestration as-a-Service (Kubernetes as-a-Service (KaaS)) solution, offered and hosted by the major cloud providers
+Examples of KaaS solutions: Amazon Elastic Kubernetes Service (Amazon EKS), Azure Kubernetes Service (AKS), DigitalOcean Kubernetes, Google Kubernetes Engine (GKE), IBM Cloud Kubernetes Service, Oracle Container Engine for Kubernetes, or VMware Tanzu Kubernetes Grid.
+
+## 04. Kubernetes  
+
+### What is Kubernetes  
+
+"[Kubernetes](https://kubernetes.io/) is an open-source system for automating deployment, scaling, and management of containerized applications".
+
+Kubernetes comes from the Greek word κυβερνήτης, which means helmsman or ship pilot  
+we can think of Kubernetes as the pilot on a ship of containers
+
+referred to as k8s (pronounced Kate's), as there are 8 characters between k and s  
+
+highly inspired by the Google Borg system, a container and workload orchestrator for its global operations  
+Google has been using for more than a decade. It is an open source project written in the Go language and licensed under the License, Version 2.0.  
+
+New Kubernetes versions are released in 4 month cycles. The current stable version is 1.29 (as of December 2023).  
+
+### Kubernetes Features
+
+#### fully supported features
+
+  ***Automatic bin packing:*** Kubernetes automatically schedules containers based on resource needs and constraints, to maximize utilization without sacrificing availability.
+  ***Designed for extensibility:*** A Kubernetes cluster can be extended with new custom features without modifying the upstream source code.
+  ***Self-healing:*** Kubernetes automatically replaces and reschedules containers from failed nodes. It terminates and then restarts containers that become unresponsive to health checks, based on existing rules/policy. It also prevents traffic from being routed to unresponsive containers.
+  ***Horizontal scaling:*** Kubernetes scales applications manually or automatically based on CPU or custom metrics utilization.
+  ***Service discovery and load balancing:*** Containers receive IP addresses from Kubernetes, while it assigns a single Domain Name System (DNS) name to a set of containers to aid in load-balancing requests across the containers of the set.
+  ***Automated rollouts and rollbacks:*** Kubernetes seamlessly rolls out and rolls back application updates and configuration changes, constantly monitoring the application's health to prevent any downtime.
+  ***Secret and configuration management:*** Kubernetes manages sensitive data and configuration details for an application separately from the container image, in order to avoid a rebuild of the respective image. Secrets consist of sensitive/confidential information passed to the application without revealing the sensitive content to the stack configuration, like on GitHub.
+  ***Storage orchestration:*** Kubernetes automatically mounts software-defined storage (SDS) solutions to containers from local storage, external cloud providers, distributed storage, or network storage systems.
+  ***Batch execution:*** Kubernetes supports batch execution, long-running jobs, and replaces failed containers.
+  ***IPv4/IPv6 dual-stack:*** Kubernetes supports both IPv4 and IPv6 addresses.
+
+#### Platform as a Service features
+
+  application deployment
+  scaling
+  load balancing
+  allows users to integrate their desired monitoring, logging and alerting solutions through optional plugins.
+
+### Why User Kebernetes
+
+***Portability:*** can be deployed in many environments such as local or remote Virtual Machines, bare metal, or in public/private/hybrid/multi-cloud setups.
+
+***Extensibility:*** support and to be supported by many 3rd party open source tools which enhance Kubernetes' capabilities and provide a feature-rich experience to its users
+
+***Architecture:*** modular and pluggable. Not only does it orchestrate modular, decoupled microservices type applications, but also its architecture follows decoupled microservices patterns. Kubernetes' functionality can be extended by writing custom resources, operators, custom APIs, scheduling rules or plugins.
+
+
+### Cloud Native Computing Foudation (CNCF)
+
+one of the largest sub-projects hosted by the Linux Foundation  
+aims to accelerate the adoption of containers, microservices, and cloud native applications
+Provides a neutral home for the Kubernetes trademark and enforces proper usage.  
+Provides license scanning of core and vendor code.  
+Offers legal guidance on patent and copyright issues.  
+Creates and maintains open source learning curriculum, training, and certification for Kubernetes and cloud native associates (KCNA), Kubernetes administrators (CKA), Kubernetes application developers (CKAD), Kubernetes security specialists (CKS), and more.  
+Manages a software conformance working group.  
+Actively markets Kubernetes.  
+Supports ad hoc activities.  
+Sponsors conferences and meetup events.  
+
+***Popular graduated projects (as of March 2024):***  
+
+    Kubernetes container orchestrator
+    Argo workflow engine for Kubernetes
+    etcd distributed key-value store
+    CoreDNS DNS server
+    containerd container runtime
+    CRI-O container runtime
+    Envoy cloud native proxy
+    Fluentd for unified logging
+    Flux continuous delivery for Kubernetes
+    Harbor registry
+    Helm package management for Kubernetes
+    Linkerd service mesh for Kubernetes
+    Open Policy Agent policy engine
+    Prometheus monitoring system and time series DB
+    Rook cloud native storage orchestrator for Kubernetes
+
+## 05. Kubernetes Architecture  
+
+At a very high level, Kubernetes is a cluster of compute systems categorized by their distinct roles:
+
+    - One or more control plane nodes
+    - One or more worker nodes (optional, but recommended). 
+
+![Kubernetes Components](assets/lsf158-102-Components.png)  
+
+### Control Plane Node Overview
+
+provides a running environment for the control plane agents responsible for managing the state of a Kubernetes cluster, and it is the brain behind all operations inside the cluster  
+control plane components are agents with very distinct roles in the cluster's management  
+In order to communicate with the Kubernetes cluster, users send requests to the control plane via a Command Line Interface (CLI) tool, a Web User-Interface (Web UI) Dashboard, or an Application Programming Interface (API).  
+
+It is important to keep the control plane running at all costs  
+Losing the control plane may introduce downtime, causing service disruption to clients, with possible loss of business  
+To ensure the control plane's fault tolerance, control plane node replicas can be added to the cluster, configured in High-Availability (HA) mode  
+While only one of the control plane nodes is dedicated to actively managing the cluster, the control plane components stay in sync across the control plane node replicas
+This type of configuration adds resiliency to the cluster's control plane, should the active control plane node fail.
+
+To persist the Kubernetes cluster's state, all cluster configuration data is saved to a distributed key-value store which only holds cluster state related data, no client workload generated data  
+The key-value store may be configured on the control plane node (stacked topology), or on its dedicated host (external topology) to help reduce the chances of data store loss by decoupling it from the other control plane agents  
+
+***stacked key-value store topology:*** HA control plane node replicas ensure the key-value store's resiliency as well
+***external key-value store topology:*** dedicated key-value store hosts have to be separately replicated for HA, a configuration that introduces the need for additional hardware, hence additional operational costs.
+
+### Control Plane Node Components
+
+#### API Server
+
+All administrative tasks are coordinated by the kube-apiserver  
+central control plane component running on the control plane node  
+intercepts RESTful calls from users, administrators, developers, operators and external agents, then validates and processes them  
+During processing, reads Kubernetes cluster's current state from the key-value store  
+after a call's execution, the resulting state of the Kubernetes cluster is saved in the key-value store for persistence  
+is the only control plane component to talk to the key-value store, both to read from and to save Kubernetes cluster state information - acting as a middle interface for any other control plane agent inquiring about the cluster's state  
+
+highly configurable and customizable
+can scale horizontally, but it also supports the addition of custom secondary API Servers, a configuration that transforms the primary API Server into a proxy to all secondary, custom API Servers, routing all incoming RESTful calls to them based on custom defined rules.
+
+#### Scheduler
+
+The role of the kube-scheduler: assign new workload objects to nodes
+During the scheduling process, decisions are made based on current Kubernetes cluster state and new workload object's requirements
+The scheduler obtains from the key-value store, via the API Server, resource usage data for each worker node in the cluster  
+The scheduler also receives from the API Server the new workload object's requirements which are part of its configuration data  
+Requirements may include constraints that users and operators set, such as scheduling work on a node labeled with disk==ssd key-value pair
+The scheduler also takes into account Quality of Service (QoS) requirements, data locality, affinity, anti-affinity, taints, toleration, cluster topology, etc  
+Once all the cluster data is available, the scheduling algorithm filters the nodes with predicates to isolate the possible node candidates which then are scored with priorities in order to select the one node that satisfies all the requirements for hosting the new workload. The outcome of the decision process is communicated back to the API Server, which then delegates the workload deployment with other control plane agents.
+
+The scheduler is highly configurable and customizable through scheduling policies, plugins, and profiles. Additional custom schedulers are also supported, then the object's configuration data should include the name of the custom scheduler expected to make the scheduling decision for that particular object; if no such data is included, the default scheduler is selected instead.
+
+A scheduler is extremely important and complex in a multi-node Kubernetes cluster, while in a single-node Kubernetes cluster possibly used for learning and development purposes, the scheduler's job is quite simple.
+
+#### Controller Managers
+
+runs controllers or operator processes to regulate the state of the Kubernetes cluster  
+are watch-loop processes continuously running and comparing the cluster's desired state (provided by objects' configuration data) with its current state (obtained from the key-value store via the API Server)  
+In case of a mismatch, corrective action is taken in the cluster until its current state matches the desired state.  
+
+The kube-controller-manager runs controllers or operators responsible to act when nodes become unavailable, to ensure container pod counts are as expected, to create endpoints, service accounts, and API access tokens.  
+
+The cloud-controller-manager runs controllers or operators responsible to interact with the underlying infrastructure of a cloud provider when nodes become unavailable, to manage storage volumes when provided by a cloud service, and to manage load balancing and routing.  
+
+#### Key-Value Data Store
+
+##### etcd
+
+an open source project under the Cloud Native Computing Foundation (CNCF)  
+a strongly consistent, distributed key-value data store used to persist a Kubernetes cluster's state  
+New data is written to the data store only by appending to it, data is never replaced in the data store  
+Obsolete data is compacted (or shredded) periodically to minimize the size of the data store  
+only the API Server is able to communicate with the etcd data store  
+
+##### etcdctl
+
+etcd's CLI management tool
+provides snapshot save and restore capabilities which come in handy especially for a single etcd instance Kubernetes cluster - common in Development and learning environments
+in Stage and Production environments, it is extremely important to replicate the data stores in HA mode, for cluster configuration data resiliency.
+
+Kubernetes cluster bootstrapping tools, such as kubeadm, by default, provision stacked etcd control plane nodes, where the data store runs alongside and shares resources with the other control plane components on the same control plane node  
+
+![Stacked Topology](assets/lsf158-103-StackedTopology.png)  
+
+For data store isolation from the control plane components, the bootstrapping process can be configured for an external etcd topology, where the data store is provisioned on a dedicated separate host, thus reducing the chances of an etcd failure.  
+
+![External Topology](assets/lsf158-104-ExternalTopology.png)  
+
+Both stacked and external etcd topologies support HA configurations  
+etcd is based on the [Raft Consensus Algorithm](https://raft.github.io/) which allows a collection of machines to work as a coherent group that can survive the failures of some of its members  
+At any given time, one of the nodes in the group will be the leader, and the rest of them will be the followers  
+etcd gracefully handles leader elections and can tolerate node failure, including leader node failures  
+Any node can be treated as a leader  
+
+the leader/followers hierarchy is distinct from the primary/secondary hierarchy, meaning that neither node is favored for the leader role, and neither node outranks other nodes. A leader will remain active until it fails, at which point in time a new leader is elected by the group of healthy followers  
+
+![Leader and Follower](assets/lsf158-105-LeadersFollowers.png)  
+
+etcd is written in the Go programming language. In Kubernetes, besides storing the cluster state, etcd is also used to store configuration details such as subnets, ConfigMaps, Secrets, etc.
+
+### Worker Node Overview
+
+provides a running environment for client applications  
+The applications are microservices running as application containers
+In Kubernetes the application containers are encapsulated in Pods, controlled by the cluster control plane agents running on the control plane node
+Pods are scheduled on worker nodes, where they find required compute, memory and storage resources to run, and networking to talk to each other and the outside world  
+A Pod is the smallest scheduling work unit in Kubernetes  
+A Pod is a logical collection of one or more containers scheduled together, and the collection can be started, stopped, or rescheduled as a single unit of work  
+in a multi-worker Kubernetes cluster, the network traffic between client users and the containerized applications deployed in Pods is handled directly by the worker nodes, and is not routed through the control plane node.
+
+### Worker Node Components
+
+#### Container Runtime
+
+Although Kubernetes is described as a "container orchestration engine", it lacks the capability to directly handle and run containers. In order to manage a container's lifecycle, Kubernetes requires a container runtime on the node where a Pod and its containers are to be scheduled. A runtime is required on each node of a Kubernetes cluster, both control plane and worker. The recommendation is to run the Kubernetes control plane components as containers, hence the necessity of a runtime on the control plane nodes. Kubernetes supports several container runtimes:  
+
+***CRI-O:*** A lightweight container runtime for Kubernetes, supporting quay.io and Docker Hub image registries    
+***containerd:*** A simple, robust, and portable container runtime  
+***Docker Engine:*** A popular and complex container platform which uses containerd as a container runtime  
+***Mirantis Container Runtime:*** Formerly known as the Docker Enterprise Edition  
+
+#### Node Agent - kubelet  
+
+The kubelet is an agent running on each node, control plane and worker
+it communicates with the control plane
+It receives Pod definitions, primarily from the API Server, and interacts with the container runtime on the node to run containers associated with the Pod
+It also monitors the health and resources of Pods running containers  
+
+connects to container runtimes through a plugin based interface - the Container Runtime Interface (CRI)  
+The CRI consists of protocol buffers, gRPC API, libraries, and additional specifications and tools  
+In order to connect to interchangeable container runtimes, kubelet uses a CRI shim, an application which provides a clear abstraction layer between kubelet and the container runtime  
+
+![Container Runtime Interface](assets/lsf158-106-cri.png)  
+
+As shown above, the kubelet acting as [grpc](https://grpc.io/) client connects to the CRI shim acting as grpc server to perform container and image operations  
+The CRI implements two services: ImageService and RuntimeService  
+The ImageService is responsible for all the image-related operations  
+the RuntimeService is responsible for all the Pod and container-related operations
+
+#### kubelet - CRI Shims  
+
+Originally the kubelet agent supported only a couple of container runtimes, first the Docker Engine followed by rkt, through a unique interface model integrated directly in the kubelet source code. 
+In time, Kubernetes started migrating towards a standardized approach to container runtime integration by introducing the CRI  
+Kubernetes adopted a decoupled and flexible method to integrate with various container runtimes without the need to recompile its source code  
+Any container runtime that implements the CRI could be used by Kubernetes to manage containers.
+
+Shims are Container Runtime Interface (CRI) implementations, interfaces or adapters, specific to each container runtime supported by Kubernetes. Below we present some examples of CRI shims:
+
+***cri-containerd:*** allows containers to be directly created and managed with containerd at kubelet's request  
+
+![cri-containerd](assets/lsf158-107-criContainerd.png)  
+
+***CRI-O:*** enables the use of any Open Conainter Initiative (OCI) compatible with Kubernetes, such as runC:  
+
+![cri-o](assets/lsf158-108-cri-o.png)  
+
+***cri-dockerd***
+ Replacement shim for dockershiim created by Docker, Inc., and Mirantis  
+ cri-dockerd that would ensure that the Docker Engine will continue to be a container runtime option for Kubernetes
+ in addition to the Mirantis Container Runtime (MCR). The introduction of cri-dockerd also ensures that both Docker Engine and MCR follow the same standardized integration method as the CRI-compatible runtimes.
+
+![dockershim to cri-dockerd](assets/lsf158-109-cri-dockerd.png)  
+
+#### Proxy - kube-proxy
+
+the network agent which runs on each node, control plane and worker  
+responsible for dynamic updates and maintenance of all networking rules on the node  
+abstracts the details of Pods networking and forwards connection requests to the containers in the Pods  
+
+responsible for TCP, UDP, and SCTP stream forwarding or random forwarding across a set of Pod backends of an application, and it implements forwarding rules defined by users through Service API objects.
+
+The kube-proxy node agent operates in conjunction with the iptables of the node  
+Iptables is a firewall utility created for the Linux OS that can be managed by users through a CLI utility of the same name  
+The iptables utility is available for and pre-installed on many Linux distributions.
+
+#### Add-ons
+
+Add-ons are cluster features and functionality not yet available in Kubernetes, therefore implemented through 3rd-party plugins and services.
+
+    ***DNS***  
+    Cluster DNS is a DNS server required to assign DNS records to Kubernetes objects and resources.  
+    ***Dashboard***  
+    A general purpose web-based user interface for cluster management.  
+    ***Monitoring***  
+    Collects cluster-level container metrics and saves them to a central data store.  
+    ***Logging***  
+    Collects cluster-level container logs and saves them to a central log store for analysis.  
+    ***Device Plugins***  
+    For system hardware resources, such as GPU, FPGA, high-performance NIC, to be advertised by the node to application pods.  
+
+### Networking Challenges
+
+Decoupled microservices based applications rely heavily on networking in order to mimic the tight-coupling once available in the monolithic era  
+Networking, in general, is not the easiest to understand and implement  
+Kubernetes is no exception - as a containerized microservices orchestrator it needs to address a few distinct networking challenges:  
+
+#### Service-to-Pod communication within the same namespace and across cluster namespaces
+
+#### Container-to-Container communication inside Pods
+
+Making use of the underlying host operating system's kernel virtualization features, a container runtime creates an isolated network space for each container it starts  
+On Linux, this isolated network space is referred to as a network namespace  
+A network namespace can be shared across containers, or with the host operating system.
+
+When a grouping of containers defined by a Pod is started, a special infrastructure Pause container is initialized by the Container Runtime for the sole purpose of creating a network namespace for the Pod  
+All additional containers, created through user requests, running inside the Pod will share the Pause container's network namespace so that they can all talk to each other via localhost.
+
+#### Pot-to-Pod Communication across nodes
+
+In a Kubernetes cluster Pods, groups of containers, are scheduled on nodes in a nearly unpredictable fashion  
+Regardless of their host node, Pods are expected to be able to communicate with all other Pods in the cluster, all this without the implementation of Network Address Translation (NAT)  
+This is a fundamental requirement of any networking implementation in Kubernetes  
+
+***IP-per-Pod***
+The Kubernetes network model aims to reduce complexity, and it treats Pods as VMs on a network, where each VM is equipped with a network interface - thus each Pod receiving a unique IP address  
+This model is called "IP-per-Pod" and ensures Pod-to-Pod communication, just as VMs are able to communicate with each other on the same network  
+
+Containers share the Pod's network namespace and must coordinate ports assignment inside the Pod just as applications would on a VM, all while being able to communicate with each other on localhost - inside the Pod  
+However, containers are integrated with the overall Kubernetes networking model through the use of the Container Network Interface (CNI) supported by CNI plugins
+CNI is a set of specifications and libraries which allow plugins to configure the networking for containers. While there are a few core plugins, most CNI plugins are 3rd-party Software Defined Networking (SDN) solutions implementing the Kubernetes networking model  
+In addition to addressing the fundamental requirement of the networking model, some networking solutions offer support for Network Policies. Flannel, Weave, Calico, and Cilium are only a few of the SDN solutions available for Kubernetes clusters  
+
+![Container Network Interface Core Plugins](assets/lsf158-110-ContainerNetworkInterfaceCorePlugins.png)  
+
+The container runtime offloads the IP assignment to CNI, which connects to the underlying configured plugin, such as Bridge or MACvlan, to get the IP address  
+Once the IP address is given by the respective plugin, CNI forwards it back to the requested container runtime  
+
+#### External-to-Pod Communication
+
+A successfully deployed containerized application running in Pods inside a Kubernetes cluster may require accessibility from the outside world  
+Kubernetes enables external accessibility through Services, complex encapsulations of network routing rule definitions stored in iptables on cluster nodes and implemented by kube-proxy agents  
+By exposing services to the external world with the aid of kube-proxy, applications become accessible from outside the cluster over a virtual IP address and a dedicated port number
+
+## 06. Installing Kubernetes
+
+
+
+### Kubernetes Configuration
+
+As the Kubernetes cluster's complexity grows, so does its hardware and resources requirements  
+Deployment of Kubernetes on a single host for learning, development, and possibly testing purposes
+the community recommends multi-host environments that support High-Availability control plane setups and multiple worker nodes for client workload for production purposes 
+Kubernetes can be installed using different cluster configurations. The major installation types are described below:  
+
+#### All-in-One Single-Node Installation
+
+all the control plane and worker components are installed and running on a single-node
+useful for learning, development, and testing, it is not recommended for production purposes.
+
+#### Single-Control Plane and Multi-Worker Installation
+
+a single-control plane node running a stacked etcd instance
+Multiple worker nodes can be managed by the control plane node.
+
+#### Single-Control Plane with Single-Node etcd, and Multi-Worker Installation
+
+single-control plane node with an external etcd instance
+Multiple worker nodes can be managed by the control plane node.
+
+#### Multi-Control Plane and Multi-Worker Installation
+
+multiple control plane nodes configured for High-Availability (HA), with each control plane node running a stacked etcd instance
+The etcd instances are also configured in an HA etcd cluster and multiple worker nodes can be managed by the HA control plane.
+
+#### Multi-Control Plane with Multi-Node etcd, and Multi-Worker Installation
+
+multiple control plane nodes configured in HA mode, with each control plane node paired with an external etcd instance  
+The external etcd instances are also configured in an HA etcd cluster, and multiple worker nodes can be managed by the HA control plane
+This is the most advanced cluster configuration recommended for production environments  
+
+### Infrastructure for Kubernetes Installation
+
+Once we decide on the installation type, we need to decide on the infrastructure  
+Infrastructure related decisions are typically guided by the desired environment type, either learning or production environment. For infrastructure, we need to decide on the following:
+
+- Should we set up Kubernetes on bare metal, public cloud, private, or hybrid cloud?
+- Which underlying OS should we use? Should we choose a Linux distribution - Red Hat-based or Debian-based, or Windows?
+- Which networking solution (CNI) should we use?
+
+Explore the [Kubernetes documentation](https://kubernetes.io/docs/setup/) for details on choosing the right solution.
+
+### Installing Local Learning Clusters
+
+There are a variety of installation tools allowing us to deploy single- or multi-node Kubernetes clusters on our workstations , for learning and development purposes.  
+While not an exhaustive list, below we enumerate a few popular ones:
+
+    ***Minikube***
+    Single- and multi-node local Kubernetes cluster, recommended for a learning environment deployed on a single host.
+    ***Kind***
+    Multi-node Kubernetes cluster deployed in Docker containers acting as Kubernetes nodes, recommended for a learning environment.
+    ***Docker Desktop***
+    Including a local Kubernetes cluster for Docker users.
+    ***Podman Desktop***
+    Including Kubernetes integration for Podman users.
+    ***MicroK8s***
+    Local and cloud Kubernetes cluster for developers and production, from Canonical.
+    ***K3S***
+    Lightweight Kubernetes cluster for local, cloud, edge, IoT deployments, originally from Rancher, currently a CNCF project.
+
+### Installing Production Clusters with Deployment Tools
+
+recommended tools for Kubernetes cluster bootstrapping and a few that are also capable of provisioning the necessary hosts on the underlying infrastructure.
+
+#### Installation Tools
+
+##### kubeadm
+
+a first-class citizen of the Kubernetes ecosystem  
+secure and recommended method to bootstrap a multi-node production ready Highly Available Kubernetes cluster, on-premises or in the cloud  
+can also bootstrap a single-node cluster for learning  
+has set of building blocks to set up the cluster  
+easily extendable to add more features
+does not support the provisioning of hosts - they should be provisioned separately with a tool of our choice.
+
+##### kubespray
+
+(formerly known as kargo) allows us to install Highly Available production ready Kubernetes clusters on AWS, GCP, Azure, OpenStack, vSphere, or bare metal. kubespray is based on Ansible, and is available on most Linux distributions. Explore the kubespray project for more details.
+
+##### kops
+
+### Production Clusters from Certified Solutions Providers
+
+The growing popularity of Kubernetes accelerated its adoption by many cloud services providers together with hosted platforms of certified Kubernetes distributions.  
+There are well over 200 managed certified Kubernetes services providers today, as many more organizations became Kubernetes partners, joining the list of initial providers of hosted Kubernetes solutions:
+
+#### Hosted Solutions
+
+Provider fully manages the provided software stack, while the user pays hosting and management charges:  
+
+    Alibaba Cloud Container Service for Kubernetes (ACK)  
+    Amazon Elastic Kubernetes Service (EKS)  
+    Azure Kubernetes Service (AKS)  
+    DigitalOcean Kubernetes (DOKS)  
+    Google Kubernetes Engine (GKE)  
+    IBM Cloud Kubernetes Service  
+    Oracle Container Engine for Kubernetes (OKE)  
+    Red Hat OpenShift  
+    VMware Tanzu Kubernetes Grid  
+
+#### Partners
+
+Additional Partners providing managed Kubernetes services and platforms:  
+
+    Aqua Security  
+    Canonical  
+    D2IQ  
+    Dell Technologies Consulting  
+    Deloitte  
+    Fujitsu  
+    GitLab  
+    HPE  
+    Kubermatic  
+    Kublr  
+    Mirantis  
+    Platform9  
+    SAP  
+    SUSE  
+    Sysdig  
+    Weaveworks  
+
+#### Turnkey Cloud Solutions
+
+Install production ready Kubernetes clusters on cloud infrastructure:  
+
+    Linode Kubernetes Engine  
+    Nirmata Managed Kubernetes  
+    Nutanix Karbon  
+    Vultr Kubernetes Engine  
+
+### Kubernetes on Windows
+
+With the release of Kubernetes v1.14, Windows was successfully introduced as a supported production ready operating system only for worker nodes of a Kubernetes cluster.  
+This enabled Kubernetes to support the deployment of Windows containers in the cluster, either as a dedicated Windows cluster, or a hybrid cluster with Windows nodes running alongside Linux nodes.  
+Keep in mind, however, that the control plane nodes are limited to running on Linux only, with no plans to extend the support to Windows control plane nodes.  
+
+With Windows Server 2019 and Windows Server 2022 being the only Windows OS supported by Kubernetes, the same container workload orchestration tool can schedule and deploy both Linux and Windows containers in the same cluster.  
+The user is responsible to configure the workload scheduling according to the expected OS, that is to schedule Linux and Windows containers on nodes with their respective operating systems when nodes of each OS coexist in the same Kubernetes cluster.  
+
+## 07. Minikube: Installing Local Kubernetes Clusters
+
+### What is MiniKube  
+
+Installs and runs on any native OS such as Linux, macOS, or Windows.  
+A Type-2 Hypervisor or a Container Runtime should be installed on the local workstation, to run in conjunction with Minikube.  
+Hypervisor or container runtime offers an isolated infrastructure for the Minikube Kubernetes cluster components, that is easily reproducible, easy to use and tear down.  
+Isolation of the cluster components from our daily environment ensures that once no longer needed, the Minikube components can be safely removed leaving behind no configuration changes to our workstation, thus no traces of their existence.  
+This does not mean, however, that we are responsible for the provisioning of any VMs or containers with guest operating systems with the help of the hypervisor or container runtime.  
+Minikube includes the necessary adapters to interact directly with the isolation software of choice to build all its infrastructure as long as the Type-2 Hypervisor or Container Runtime is installed on our workstation.
+
+Minikube is built on the capabilities of the libmachine library originally designed by Docker to build Virtual Machine container hosts on any physical infrastructure.  
+In time Minikube became very flexible, supporting several hypervisors and container runtimes, depending on the host workstation's native OS.
+
+Minikube can be installed without an isolation software, on bare-metal, which may result in permanent configuration changes to the host OS.  
+To prevent such permanent configuration changes, a second form of isolation can be achieved by installing Minikube inside a Virtual Machine provisioned with a Type-2 Hypervisor of choice, and a desktop guest OS of choice (with enabled GUI).  
+As a result, when installed inside a VM, Minikube will end up making configuration changes to the guest environment, still isolated from the host workstation.
+These are two distinct methods to isolate the Minikube environment from our host workstation.
+
+The isolation software can be specified by the user with the `--driver` option, otherwise Minikube will try to find a preferred method for the host OS of the workstation.
+
+Once decided on the isolation method, the next step is to determine the required number of Kubernetes cluster nodes, and their sizes in terms of CPU, memory, and disk space.  
+Minikube invokes the hypervisor of choice to provision the infrastructure VM(s) which will host the Kubernetes cluster node(s), or the runtime of choice to run infrastructure container(s) that host the cluster node(s).  
+Keep in mind that Minikube now supports all-in-one single-node and multi-node clusters.  
+Regardless of the isolation method and the expected cluster and node sizes, a local Minikube Kubernetes cluster will ultimately be impacted and/or limited by the physical resources of the host workstation.  
+We have to be mindful of the needs of the host OS and any utilities it may be running, then the needs of the hypervisor or the container runtime, and finally the remaining resources that can be allocated to our Kubernetes cluster.  
+
+For a learning environment the recommendations are that a Kubernetes node has 2 CPU cores (or virtual CPUs) at a minimum, at least 2 GB of RAM memory (with 4 - 8 GB of RAM recommended for optimal usage), and 20+ GB of disk storage space.  
+When migrating towards a larger, more dynamic, production grade cluster, these resource values should be adjusted accordingly.  
+The Kubernetes nodes are expected to access the internet as well, for software updates, container image downloads, and for client accessibility.
+
+Following the node(s)' provisioning phase, Minikube invokes kubeadm, to bootstrap the Kubernetes cluster components inside the previously provisioned node(s).  
+We need to ensure that we have the necessary hardware and software required by Minikube to build our environment.
+
+### Requirements for Running Minikube  
+
+#### VT-x / AMD-v Virtualization
+
+#### kubectl
+
+#### Type-2 Hypervisor or container runtime
+
+#### Internet connection on first Minikube run
+
+### Installing Minikube on Linux
+
+### Installing Minikube on macOS
+
+### Installing Minikube on Windows
+
+### Advanced Minikube Features
+
+### Demo: Getting Started with Minikube and Profiles
+
+## 08. Accessing Minikube
+
+## 09. Kubernetes Building Blocks
+
+## 10. Authentication, Authroization, Admission Control
+
+## 11. Services
+
+## 12. Deploying a Standalone Application
+
+## 13. Kubernetes Volume Management
+
+## 14. ConfigMaps
+
+## 15. Ingress
+
+## 16. Advanced Topics
+
+## 17. Kubetnetes Community
