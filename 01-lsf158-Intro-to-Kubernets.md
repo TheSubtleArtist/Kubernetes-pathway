@@ -36,8 +36,13 @@
   - [Installing Minikube on macOS](#installing-minikube-on-macos)
   - [Installing Minikube on Windows](#installing-minikube-on-windows)
   - [Advanced Minikube Features](#advanced-minikube-features)
-  - [Demo: Getting Started with Minikube and Profiles](#demo-getting-started-with-minikube-and-profiles)
+  - [Demo Video: Getting Started with Minikube and Profiles](#demo-video-getting-started-with-minikube-and-profiles)
 - [08. Accessing Minikube](#08-accessing-minikube)
+  - [Accessing Minikube](#accessing-minikube)
+  - [More kubectl](#more-kubectl)
+  - [Installing kubetcl on Linux](#installing-kubetcl-on-linux)
+  - [Installing kubetcl on macOS](#installing-kubetcl-on-macos)
+  - [Installing kubetcl on Windows](#installing-kubetcl-on-windows)
 - [09. Kubernetes Building Blocks](#09-kubernetes-building-blocks)
 - [10. Authentication, Authroization, Admission Control](#10-authentication-authroization-admission-control)
 - [11. Services](#11-services)
@@ -1041,9 +1046,58 @@ It is also a profile aware command - it deletes the default minikube cluster if 
     🔥  Deleting "minibox-m03" in virtualbox ...
     💀  Removed all traces of the "minibox" cluster.
 
-### Demo: Getting Started with Minikube and Profiles
+### Demo Video: Getting Started with Minikube and Profiles
 
 ## 08. Accessing Minikube
+
+### Accessing Minikube
+
+#### Command Line Interface
+
+kubectl is the Kubernetes Command Line Interface (CLI) client to manage cluster resources and applications.  
+It is very flexible and easy to integrate with other systems, therefore it can be used standalone, or part of scripts and automation tools.  
+Once all required credentials and cluster access points have been configured for kubectl, it can be used remotely from anywhere to access a cluster.
+
+#### Web-babsed User interface (WEb UI)
+
+The Kubernetes Dashboard provides a Web-based User Interface (Web UI) to interact with a Kubernetes cluster to manage resources and containerized applications.  
+While not as flexible as the kubectl CLI client tool, it is still a preferred tool to users who are not as proficient with the CLI.  
+
+![Kubernetes Dashboard](assets/lsf158-111-kubernetesDashboard.png)  
+
+#### API
+
+The main component of the Kubernetes control plane is the API Server, responsible for exposing the Kubernetes APIs.  
+The APIs allow operators and users to directly interact with the cluster.  
+Using both CLI tools and the Dashboard UI, we can access the API server running on the control plane node to perform various operations to modify the cluster's state.  
+The API Server is accessible through its endpoints by agents and users possessing the required credentials.
+
+![HTTP API Directory Tree of Kubernetes](assets/lsf158-112-api-directory.png)  
+
+HTTP API directory tree of Kubernetes can be divided into three independent group types:
+
+***Core group (/api/v1)***
+This group includes objects such as Pods, Services, Nodes, Namespaces, ConfigMaps, Secrets, etc.  
+
+***Named group***
+This group includes objects in /apis/$NAME/$VERSION format. These different API versions imply different levels of stability and support:  
+
+- Alpha level - it may be dropped at any point in time, without notice. For example, /apis/batch/v2alpha1.
+- Beta level - it is well-tested, but the semantics of objects may change in incompatible ways in a subsequent beta or stable release. For example, /apis/certificates.k8s.io/v1beta1.
+- Stable level - appears in released software for many subsequent versions. For example, /apis/networking.k8s.io/v1.
+
+***System-wide***  
+This group consists of system-wide API endpoints, like /healthz, /logs, /metrics, /ui, etc.  
+
+We can access an API Server either directly by calling the respective API endpoints, using the CLI tools, or the Dashboard UI.
+
+### More kubectl
+
+### Installing kubetcl on Linux
+
+### Installing kubetcl on macOS
+
+### Installing kubetcl on Windows
 
 ## 09. Kubernetes Building Blocks
 
