@@ -232,7 +232,6 @@ New Kubernetes versions are released in 4 month cycles. The current stable versi
 
 ***Architecture:*** modular and pluggable. Not only does it orchestrate modular, decoupled microservices type applications, but also its architecture follows decoupled microservices patterns. Kubernetes' functionality can be extended by writing custom resources, operators, custom APIs, scheduling rules or plugins.
 
-
 ### Cloud Native Computing Foudation (CNCF)
 
 one of the largest sub-projects hosted by the Linux Foundation  
@@ -381,7 +380,7 @@ in a multi-worker Kubernetes cluster, the network traffic between client users a
 
 Although Kubernetes is described as a "container orchestration engine", it lacks the capability to directly handle and run containers. In order to manage a container's lifecycle, Kubernetes requires a container runtime on the node where a Pod and its containers are to be scheduled. A runtime is required on each node of a Kubernetes cluster, both control plane and worker. The recommendation is to run the Kubernetes control plane components as containers, hence the necessity of a runtime on the control plane nodes. Kubernetes supports several container runtimes:  
 
-***CRI-O:*** A lightweight container runtime for Kubernetes, supporting quay.io and Docker Hub image registries    
+***CRI-O:*** A lightweight container runtime for Kubernetes, supporting quay.io and Docker Hub image registries
 ***containerd:*** A simple, robust, and portable container runtime  
 ***Docker Engine:*** A popular and complex container platform which uses containerd as a container runtime  
 ***Mirantis Container Runtime:*** Formerly known as the Docker Enterprise Edition  
@@ -406,7 +405,7 @@ the RuntimeService is responsible for all the Pod and container-related operatio
 
 #### kubelet - CRI Shims  
 
-Originally the kubelet agent supported only a couple of container runtimes, first the Docker Engine followed by rkt, through a unique interface model integrated directly in the kubelet source code. 
+Originally the kubelet agent supported only a couple of container runtimes, first the Docker Engine followed by rkt, through a unique interface model integrated directly in the kubelet source code.
 In time, Kubernetes started migrating towards a standardized approach to container runtime integration by introducing the CRI  
 Kubernetes adopted a decoupled and flexible method to integrate with various container runtimes without the need to recompile its source code  
 Any container runtime that implements the CRI could be used by Kubernetes to manage containers.
@@ -500,13 +499,11 @@ By exposing services to the external world with the aid of kube-proxy, applicati
 
 ## 06. Installing Kubernetes
 
-
-
 ### Kubernetes Configuration
 
 As the Kubernetes cluster's complexity grows, so does its hardware and resources requirements  
 Deployment of Kubernetes on a single host for learning, development, and possibly testing purposes
-the community recommends multi-host environments that support High-Availability control plane setups and multiple worker nodes for client workload for production purposes 
+the community recommends multi-host environments that support High-Availability control plane setups and multiple worker nodes for client workload for production purposes
 Kubernetes can be installed using different cluster configurations. The major installation types are described below:  
 
 #### All-in-One Single-Node Installation
@@ -688,6 +685,100 @@ We need to ensure that we have the necessary hardware and software required by M
 #### Internet connection on first Minikube run
 
 ### Installing Minikube on Linux
+
+***Ubuntu Linux 22.04 LTS*** with ***VirtualBox v7.0***  
+This installation assumes no other isolation software is installed on our Linux workstation, such as KVM2, QEMU, Docker Engine or Podman, that Minikube can use as a driver.
+
+Verify the virtualization support on your Linux OS in a terminal (a non-empty output indicates supported virtualization):
+
+`:> grep -E --color 'vmx|svm' /proc/cpuinfo`
+
+#### Download Minikube
+
+Minikube can be easily downloaded and installed in a terminal.  
+Either the latest release or a specific release available from the Minikube release page can be installed by running the following commands.  
+While these installation commands reflect the official installation guide at the time of this course content update, they may change in the near future as part of the continuous growth of Kubernetes.  
+It is strongly recommended to inspect the official installation guide for Linux > x86-64 > Stable when attempting the installation, to ensure the most up-to-date package repositories are used in the process.  
+Below we are presenting the Binary download option, a distribution neutral installation approach:
+
+$ curl -LO <https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64>
+
+$ sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
+***NOTE:*** Replacing /latest/ with a particular version, such as /v1.31.2/ will download that specified Minikube version.
+
+#### Start minikube
+
+In a terminal we can start Minikube with the minikube start command, which bootstraps a single-node cluster with the latest supported stable Kubernetes version release.  
+For a specific Kubernetes version the --kubernetes-version option can be used as such minikube start --kubernetes-version=v1.27.1 (where latest is default and acceptable version value, and stable is also acceptable).  
+In case there are other virtualization driver candidates for Minikube on the workstation, it is good practice to supply the desired driver with the --driver=virtualbox option.
+
+    `:>$ minikube start --driver=virtualbox`
+    ```md
+    😄 minikube v1.32.0 on Ubuntu 22.04
+    ✨ Using the virtualbox driver based on user configuration
+    💿 Downloading VM boot image ...
+       > minikube-v1.32.1-amd64.iso....: 65 B / 65 B [---------] 100.00% ? p/s 0s
+       > minikube-v1.32.1-amd64.iso: 292.96 MiB / 292.96 MiB 100.00% 31.34 MiB p
+    👍 Starting control plane node minikube in cluster minikube
+    💾 Downloading Kubernetes v1.28.3 preload ...
+       > preloaded-images-k8s-v18-v1...: 403.35 MiB / 403.35 MiB 100.00% 32.19 M
+    🔥 Creating virtualbox VM (CPUs=2, Memory=6000MB, Disk=20000MB) ...
+    🐳 Preparing Kubernetes v1.28.3 on Docker 24.0.7 ...
+       ▪ Generating certificates and keys ...
+       ▪ Booting up control plane ...
+       ▪ Configuring RBAC rules ...
+    🔗 Configuring bridge CNI (Container Networking Interface) ...
+    🔎 Verifying Kubernetes components...
+       ▪ Using image gcr.io/k8s-minikube/storage-provisioner:v5
+    🌟 Enabled addons: storage-provisioner, default-storageclass
+    💡 kubectl not found. If you need it, try: 'minikube kubectl -- get pods -A'
+    🏄 Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default
+    ```
+
+***NOTE:**** An error message that reads "Unable to pick a default driver..." means that Minikube was not able to locate any one of the supported hypervisors or runtimes. The recommendation is to install or re-install a desired isolation tool, and ensure its executable is found in the default PATH of your OS distribution.
+
+***NOTE:*** An error message that reads “The vboxdrv kernel module is not loaded” means that a critical VirtualBox kernel module may not be available.  
+First, try to re-install VirtualBox on the workstation.  
+Second, try installing a C compiler that may be missing from your workstation and then build the kernel module.  
+For the Ubuntu 22.04 LTS OS the required gcc compiler can be downloaded and installed from <https://packages.ubuntu.com/jammy/amd64/gcc-12/download>. The kernel module can be built with the sudo /sbin/vboxconfig command. After a successful rebuild, attempt to start minikube again with virtualbox using the command above.
+
+Check the status. With the minikube status command, we display the status of the Minikube cluster:
+
+    `:> minikube status`
+    
+    ```md
+    minikube
+    type: Control Plane
+    host: Running
+    kubelet: Running
+    apiserver: Running
+    kubeconfig: Configured
+    ```
+
+***Stop Minikube.***  
+
+ With the minikube stop command, we can stop Minikube. This command stops all applications running in Minikube, safely stops the cluster and the VirtualBox VM, preserving our work until we decide to start the Minikube cluster once again, while preserving the Minikube VM:
+
+    `:> minikube stop`
+    
+    ```md
+    
+    ✋  Stopping node "minikube"  ...
+    🛑  1 node stopped.
+    ```
+
+When it is time to run the cluster again, simply run the minikube start command (driver option is not required), and it will restart the earlier bootstrapped Minikube cluster.
+
+***Remove Minikube.***  
+The minikube delete command completely removes Minikube and the Minikube VM. This command should be attempted only when the Minikube cluster is to be decommissioned. All work will be lost after the completion of this command:
+
+    `:> minikube delete`
+    
+    ```md
+    🔥 Deleting "minikube" in virtualbox ...
+    💀 Removed all traces of the "minikube" cluster.
+    ```
 
 ### Installing Minikube on macOS
 
