@@ -43,6 +43,9 @@
   - [Installing kubetcl on Linux](#installing-kubetcl-on-linux)
   - [Installing kubetcl on macOS](#installing-kubetcl-on-macos)
   - [Installing kubetcl on Windows](#installing-kubetcl-on-windows)
+  - [kubectl Configuration File](#kubectl-configuration-file)
+  - [Kubernetes Dashboard](#kubernetes-dashboard)
+  - [APIs with 'kubectl proxy'](#apis-with-kubectl-proxy)
 - [09. Kubernetes Building Blocks](#09-kubernetes-building-blocks)
 - [10. Authentication, Authroization, Admission Control](#10-authentication-authroization-admission-control)
 - [11. Services](#11-services)
@@ -1140,7 +1143,231 @@ For bash shell it can be achieved by running the following sequence of commands:
 
 ### Installing kubetcl on macOS
 
+Two methods to [install kubectl on macOS](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/) - manually and using the Homebrew package manager  
+
+To manually install kubectl:  
+
+    :> curl -LO "htt‌ps://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stab...)/bin/darwin/amd64/kubectl"
+
+    :> chmod +x ./kubectl
+
+    :> sudo mv ./kubectl /usr/local/bin/kubectl
+
+    :> sudo chown root: /usr/local/bin/kubectl
+
+Where: https://dl.k8s.io/release/stable.txt aims to display the latest Kubernetes stable release version.
+
+***NOTE:*** To download and setup a specific version of kubectl (such as v1.28.3) to be aligned with the Kubernetes version of the Minikube cluster, issue the following command instead:
+
+    :> curl -LO htt‌ps://dl.k8s.io/release/v1.28.3/bin/darwin/amd64/kubectl
+
+***NOTE:*** The commands above download the kubectl package for systems equipped with Intel processors.  
+For newer macOS systems equipped with Apple Silicon download the required package by replacing /amd64/ with /arm64/ in the download commands above.
+
+To install kubectl with Homebrew package manager:  
+
+    :> brew install kubectl
+
+or
+
+    :> brew install kubernetes-cli
+
+The installed version can be verified with:
+
+    :> kubectl version --client
+
+A typical helpful post-installation configuration is to [enable shell autocompletion for kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/#enable-shell-autocompletion) on your favorite shell (bash, fish, zsh).
+
 ### Installing kubetcl on Windows
+
+Download the binary directly or use curl from the CLI.  
+Once downloaded the binary needs to be added to the PATH.
+
+#### Direct Download
+
+Direct download link for [v1.29.3](https://dl.k8s.io/release/v1.29.3/bin/windows/amd64/kubectl.exe)  
+Other versions can be downloaded simply by replacing /v1.29.3/ with the desired version, especially if we intend to be aligned with the Kubernetes version of the Minikube cluster:
+
+NOTE: Obtain the latest kubectl stable release version number from the link below, and if needed, edit the download link for the desired binary version from above: https://dl.k8s.io/release/stable.txt.
+
+
+#### CLI
+
+Use the curl command (if installed) from the CLI:
+
+    :> curl -LO "htt‌ps://dl.k8s.io/release/v1.28.3/bin/windows/amd64/kubectl.exe"
+
+Once downloaded, append the kubectl binary folder to the PATH.
+
+***NOTE:*** Docker Desktop for Windows adds its own version of kubectl to PATH. If you have installed Docker Desktop before, you may need to place your PATH entry before the one added by the Docker Desktop installer or remove the Docker Desktop's kubectl.
+
+The installed version can be verified with:
+
+    :> kubectl version --client
+
+A typical helpful post-installation configuration is to [enable shell autocompletion for kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/#enable-shell-autocompletion) for PowerShell.  
+
+### kubectl Configuration File
+
+To access the Kubernetes cluster, the kubectl client needs the control plane node endpoint and appropriate credentials to be able to securely interact with the API Server running on the control plane node.  
+While starting Minikube, the startup process creates, by default, a configuration file, config, inside the .kube directory (often referred to as the kubeconfig), which resides in the user's home directory.  
+The configuration file has all the connection details required by kubectl.  
+By default, the kubectl binary parses this file to find the control plane node's connection endpoint, along with the required credentials.  
+Multiple kubeconfig files can be configured with a single kubectl client.  
+To look at the connection details, we can either display the content of the ~/.kube/config file (on Linux) or run:  
+    `:> kubectl config view`  
+
+The kubeconfig includes the API Server's endpoint server: ht‌t‌ps://192.168.99.100:8443 and the minikube user's client authentication key and certificate data.
+
+Once kubectl is installed, we can display information about the Minikube Kubernetes cluster with the kubectl cluster-info command:  
+    ':> kubectl cluster-info`
+
+To further debug and diagnose cluster problems, use:  
+    `:> kubectl cluster-info dump`  
+
+You can find more details about the [kubectl command line options here](https://kubernetes.io/docs/reference/kubectl/).  
+
+Although for the Kubernetes cluster installed by Minikube the ~/.kube/config file gets created automatically, this is not the case for Kubernetes clusters installed by other tools.  
+In other cases, the config file has to be created manually and sometimes re-configured to suit various networking and client/server setups.
+
+### Kubernetes Dashboard  
+
+Kubernetes Dashboard
+
+The Kubernetes Dashboard provides a web-based user interface for Kubernetes cluster management.  
+Minikube installs the Dashboard as an addon, but it is disabled by default.  
+Prior to using the Dashboard we are required to enable the Dashboard addon, together with the metrics-server addon, a helper addon designed to collect usage metrics from the Kubernetes cluster.  
+To access the dashboard from Minikube, we can use the minikube dashboard command, which opens a new tab in our web browser displaying the Kubernetes Dashboard, but only after we list, enable required addons, and verify their state:
+
+ :> minikube addons list
+
+ :> minikube addons enable metrics-server
+
+ :> minikube addons enable dashboard
+
+ :> minikube addons list
+
+ :> minikube dashboard  
+
+ ![Kubernetes Dashboard](assets/lsf158-113-kubernetesDashboard.png)  
+
+ ***NOTE:*** In case the browser is not opening another tab and does not display the Dashboard as expected, verify the output in your terminal as it may display a URL for the Dashboard (together with some Error messages). If the URL is not displayed, we can request it to be displayed with the following command:
+
+    :> minikube dashboard --url
+
+Copy and paste the displayed URL in a new tab of your browser. Depending on your terminal's features you may be able to just click or right-click the URL to open directly in the browser.
+
+After a logout/login or a reboot of your workstation the expected behavior may be observed (where the minikube dashboard command directly opens a new tab in your browser displaying the Dashboard).
+
+### APIs with 'kubectl proxy'  
+
+Issuing the `:> kubectl proxy` command, kubectl authenticates with the API server on the control plane node and makes services available on the default proxy port 8001.
+
+First, we issue the kubectl proxy command:
+
+`:> kubectl proxy`
+
+Starting to serve on 127.0.0.1:8001
+
+It locks the terminal for as long as the proxy is running, unless we run it in the background (with kubectl proxy &).
+
+When kubectl proxy is running, we can send requests to the API over the localhost on the default proxy port 8001 (from another terminal, since the proxy locks the first terminal when running in foreground):
+
+`:> curl http://localhost:8001/`
+
+    {
+    "paths": [
+    "/api",
+    "/api/v1",
+    "/apis",
+    "/apis/apps",
+    ......
+    ......
+    "/logs",
+    "/metrics",
+    "/openapi/v2",
+    "/version"
+    ]
+    }
+
+With the above curl request, we requested all the API endpoints from the API server.  
+Clicking on the link above (in the curl command), it will open the same listing output in a browser tab.
+
+We can explore several path combinations with curl or in a browser as well, such as:
+
+    http://localhost:8001/api/v1
+
+    http://localhost:8001/apis/apps/v1
+
+    http://localhost:8001/healthz
+
+    http://localhost:8001/metrics  
+
+#### APIs With Authentication  
+
+When not using the kubectl proxy, we need to authenticate to the API Server when sending API requests.  
+We can authenticate by providing a Bearer Token when issuing a curl command, or by providing a set of keys and certificates.
+
+A ***Bearer Token*** is an access token that can be generated by the authentication server (the API Server on the control plane node) at the client's request. Using that token, the client can securely communicate with the Kubernetes API Server without providing additional authentication details, and then, access resources. The token may need to be provided again for subsequent resource access requests. 
+
+Let's ***create an access token for the default ServiceAccount***, and grant special permission to access the root directory of the API (special permission that was not necessary when the kubectl proxy was used earlier). The special permission will be set through a Role Based Access Control (RBAC) policy. The policy is the ***clusterrole*** defined below, which is granted through the ***clusterrolebinding*** definition (RBAC, clusterroles, and clusterrolebindings will be discussed in a later chapter). The special permission is only needed to access the root directory of the API, but not needed to access /api, /apis, or other subdirectories:
+
+`:> export TOKEN=$(kubectl create token default)` or `:>$TOKEN = kubectl create token default` (Powershell)
+
+`:> kubectl create clusterrole api-access-root --verb=get --non-resource-url=/*` or  
+`:> kubectl create clusterrole api-access-root --verb=get --non-resource-url='/*'` (Powershell)
+
+`:> kubectl create clusterrolebinding api-access-root --clusterrole api-access-root --serviceaccount=default:default`
+
+Retrieve the API Server endpoint:
+
+`:> export APISERVER=$(kubectl config view | grep https | cut -f 2- -d ":" | tr -d " ")` or  
+
+Confirm that the APISERVER stored the same IP as the Kubernetes control plane IP by issuing the following two commands and comparing their outputs:
+
+`:> echo $APISERVER`
+
+htt‌ps://192.168.99.100:8443
+
+`:> kubectl cluster-info`
+
+Kubernetes control plane is running at htt‌ps://192.168.99.100:8443 ...
+
+Access the API Server using the curl command, as shown below:
+
+$ curl $APISERVER --header "Authorization: Bearer $TOKEN" --insecure
+
+{
+ "paths": [
+   "/api",
+   "/api/v1",
+   "/apis",
+   "/apis/apps",
+   ......
+   ......
+   "/logs",
+   "/metrics",
+   "/openapi/v2",
+   "/version"
+ ]
+}
+
+We can run additional curl commands to retrieve details about specific API groups as follows.  
+These commands should work even without the special permission defined above and granted to the default ServiceAccount associated with the access token:  
+
+    :> curl $APISERVER/api/v1 --header "Authorization: Bearer $TOKEN" --insecure
+
+    :> curl $APISERVER/apis/apps/v1 --header "Authorization: Bearer $TOKEN" --insecure
+
+    :> curl $APISERVER/healthz --header "Authorization: Bearer $TOKEN" --insecure
+
+    :> curl $APISERVER/metrics --header "Authorization: Bearer $TOKEN" --insecure
+
+Instead of the access token, we can extract the client certificate, client key, and certificate authority data from the .kube/config file.  
+Once extracted, they can be encoded and then passed with a curl command for authentication.  
+The new curl command would look similar to the example below. Keep in mind, however, that the example command below would only work with the base 64 encoded client certificate, key and certificate authority data, and it is provided only for illustrative purposes.
+
+    :> curl $APISERVER --cert encoded-cert --key encoded-key --cacert encoded-ca
 
 ## 09. Kubernetes Building Blocks
 
