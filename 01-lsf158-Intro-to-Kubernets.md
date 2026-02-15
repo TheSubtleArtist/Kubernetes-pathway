@@ -47,6 +47,17 @@
   - [Kubernetes Dashboard](#kubernetes-dashboard)
   - [APIs with 'kubectl proxy'](#apis-with-kubectl-proxy)
 - [09. Kubernetes Building Blocks](#09-kubernetes-building-blocks)
+  - [Kubernetes Object Model](#kubernetes-object-model)
+  - [Nodes](#nodes)
+  - [Namespaces](#namespaces)
+  - [Pods](#pods)
+  - [Labels](#labels)
+  - [Label Selectors](#label-selectors)
+  - [ReplicationControllers](#replicationcontrollers)
+  - [ReplicaSets](#replicasets)
+  - [Deployments](#deployments)
+  - [DaemonSets](#daemonsets)
+  - [Services](#services)
 - [10. Authentication, Authroization, Admission Control](#10-authentication-authroization-admission-control)
 - [11. Services](#11-services)
 - [12. Deploying a Standalone Application](#12-deploying-a-standalone-application)
@@ -1370,6 +1381,186 @@ The new curl command would look similar to the example below. Keep in mind, howe
     :> curl $APISERVER --cert encoded-cert --key encoded-key --cacert encoded-ca
 
 ## 09. Kubernetes Building Blocks
+
+### Kubernetes Object Model
+
+
+What containerized applications we are running.
+The nodes where the containerized applications are deployed.
+Application resource consumption.
+Policies attached to applications, like restart/upgrade policies, fault tolerance, ingress/egress, access control, etc.
+
+With each object, we declare our intent, or the desired state of the object, in the spec section.  
+The Kubernetes system manages the status section for objects, where it records the actual state of the object.  
+At any given point in time, the Kubernetes Control Plane tries to match the object's actual state to the object's desired state.  
+An object definition manifest must include other fields that specify the version of the API we are referencing as the apiVersion, the object type as kind, and additional data helpful to the cluster or users for accounting purposes - the metadata.  
+In certain object definitions, however, we find different sections that replace spec, they are data and stringData.  
+Both data and stringData sections facilitate the declaration of information that should be stored by their respective objects.
+
+When creating an object, the object's configuration data section from below the spec field has to be submitted to the Kubernetes API Server.  
+The API request to create an object must have the spec section, describing the desired state, as well as other details.  
+Although the API Server accepts object definitions in a JSON format, most often we provide such definition manifests in a YAML format which is converted by kubectl in a JSON payload and sent to the API Server.
+
+### Nodes
+
+[Nodes](https://kubernetes.io/docs/concepts/architecture/nodes/) are virtual identities assigned by Kubernetes to the systems part of the cluster - whether Virtual Machines, bare-metal, Containers, etc.  
+These identities are unique to each system, and are used by the cluster for resources accounting and monitoring purposes, which helps with workload management throughout the cluster.
+
+Each node is managed with the help of two Kubernetes node agents - kubelet and kube-proxy, while it also hosts a container runtime.  
+The kubelet and kube-proxy node agents are responsible for executing all local workload management related tasks - interact with the runtime to run containers, monitor containers and node health, report any issues and node state to the API Server, and manage network traffic to containers.
+The container runtime is required to run all containerized workload on the node - control plane agents and user workloads.  
+
+#### Node Types
+
+Based on their predetermined functions, there are two distinct types of nodes - control plane and worker.  
+
+A typical Kubernetes cluster includes at least one ***control plane node***, but it may include multiple control plane nodes for the High Availability (HA) of the control plane.  
+In addition, the cluster includes one or more ***worker nodes*** to provide resource redundancy in the cluster.  
+There are cases when a single all-in-one cluster is bootstrapped as a single node on a single VM, bare-metal, or Container, when high availability and resource redundancy are not of importance.  
+These are hybrid or mixed nodes hosting both control plane agents and user workload on the same system.  
+Minikube allows us to bootstrap multi-node clusters with distinct, dedicated control plane nodes, however, if our host system has a limited amount of physical resources (CPU, RAM, disk), we can easily bootstrap a single all-in-one cluster as a single node on a single VM or Container, and still be able to explore most of the topics covered in this course, with the exception of features specific to multi-node clusters, such as DaemonSets, multi node networking, etc.
+
+***Node identities*** are created and assigned during the cluster bootstrapping process by the tool responsible to initialize the cluster agents.  
+Minikube is using the default kubeadm bootstrapping tool, to initialize the control plane node during the init phase and grow the cluster by adding worker or control plane nodes with the join phase.
+
+The ***control plane nodes*** run the control plane agents, such as the API Server, Scheduler, Controller Managers, and etcd in addition to the kubelet and kube-proxy node agents, the container runtime, and add-ons for container networking, monitoring, logging, DNS, etc.
+
+***Worker nodes*** run the kubelet and kube-proxy node agents, the container runtime, and add-ons for container networking, monitoring, logging, DNS, etc.
+
+Collectively, the control plane node(s) and the worker node(s) represent the Kubernetes cluster. A cluster’s nodes are systems distributed either on the same private network, across different networks, even across different cloud networks.
+
+### Namespaces
+
+Namespaces are one of the most desired features of Kubernetes, securing its lead against competitors, as it provides a solution to the multi-tenancy requirement of today's enterprise development teams.
+If multiple users and teams use the same Kubernetes cluster we can partition the cluster into virtual sub-clusters using Namespaces.  
+The names of the resources/objects created inside a Namespace are unique, but not across Namespaces in the cluster.
+
+To list all the Namespaces, we can run the following command:
+
+`:>kubectl get namespaces`
+
+```md
+NAME              STATUS       AGE
+default           Active       11h
+kube-node-lease   Active       11h
+kube-public       Active       11h
+kube-system       Active       11h
+```  
+
+#### Default Namespaces 
+
+Generally, Kubernetes creates four Namespaces out of the box:
+
+- kube-system
+- kube-public
+- kube-node-lease
+- default  
+
+The ***kube-system*** Namespace contains the objects created by the Kubernetes system, mostly the control plane agents. 
+The ***default*** Namespace contains the objects and resources created by administrators and developers, and objects are assigned to it by default unless another Namespace name is provided by the user.  
+***kube-public*** is a special Namespace, which is unsecured and readable by anyone, used for special purposes such as exposing public (non-sensitive) information about the cluster.  
+The newest Namespace is ***kube-node-lease*** which holds node lease objects used for node heartbeat data.  
+Good practice, however, is to create additional Namespaces, as desired, to virtualize the cluster and isolate users, developer teams, applications, or tiers:
+
+`:> kubectl create namespace <namespace-name>`  
+
+Resource quotas help users limit the overall resources consumed within Namespaces, while LimitRanges help limit the resources consumed by individual Containers and their enclosing objects in a Namespace. 
+
+### Pods
+
+A [Pod](https://kubernetes.io/docs/concepts/workloads/pods/) is the smallest Kubernetes workload object.  
+It is the unit of deployment in Kubernetes, which represents a single instance of the application.  
+A Pod is a logical collection of one or more containers, enclosing and isolating them to ensure that they:
+
+- Are scheduled together on the same host with the Pod.
+- Share the same network namespace, meaning that they share a single IP address originally assigned to the Pod.
+- Have access to mount the same external storage (volumes) and other common dependencies.  
+
+![Single and Multi-container pods](/assets/lsf158-114-pods.png)  
+
+Pods are ephemeral in nature, and they do not have the capability to self-heal.  
+That is the reason they are used with controllers, or operators (controllers/operators are used interchangeably), which handle Pods' replication, fault tolerance, self-healing, etc.  
+Examples of controllers are Deployments, ReplicaSets, DaemonSets, Jobs, etc. When an operator is used to manage an application, the Pod's specification is nested in the controller's definition using the Pod Template. 
+
+Below is an example of a stand-alone Pod object's definition manifest in YAML format, without an operator.  
+This represents the declarative method to define an object, and can serve as a template for a much more complex Pod definition manifest if desired:
+
+```YAML
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    run: nginx-pod
+spec:
+  containers:
+  - name: nginx-pod
+    image: nginx:1.22.1
+    ports:
+    - containerPort: 80
+```
+
+The `apiVersion` field must specify v1 for the Pod object definition.  
+The second required field is `kind` specifying the Pod object type.  
+The third required field `metadata`, holds the object's name and optional labels and annotations.  
+The fourth required field `spec`, or `PodSpec` marks the beginning of the block defining the desired state of the Pod object.  
+
+Our Pod creates a single container running the nginx:1.22.1 image pulled from a container image registry, in this case from Docker Hub.  
+The `containerPort` field specifies the container port to be exposed by Kubernetes resources for inter-application access or external client access.  
+The contents of `spec` are evaluated for scheduling purposes, then the kubelet of the selected node becomes responsible for running the container image with the help of the container runtime of the node.  
+The Pod's name and labels are used for workload accounting purposes.
+
+The above definition manifest, if stored by a `def-pod.yaml` file, is loaded into the cluster to run the desired Pod and its associated container image. While create is exemplified below, advanced Kubernetes practitioners may opt to use apply instead:
+
+`:> kubectl create -f def-pod.yaml`
+
+Writing definition manifests, especially complex ones, may prove to be quite time consuming and troublesome because YAML is extremely sensitive to indentation.  
+When eventually editing such definition manifests keep in mind that ***each indent is two blank spaces wide***, and ***TAB should be omitted***.
+
+Imperatively, we can simply run the Pod defined above without the definition manifest as such:
+
+`:> kubectl run nginx-pod --image=nginx:1.22.1 --port=80`  
+
+The imperative command with additional key flags such as `dry-run` and the yaml output, can generate the definition template instead of running the Pod, while the template is then stored in the `nginx-pod.yaml` file. The following is a multi-line command that should be selected in its entirety for copy/paste (including the backslash character "\"):
+
+Generate a definition manifest in yaml:  
+`:> kubectl run nginx-pod --image=nginx:1.22.1 --port=80 --dry-run=client -o yaml > nginx-pod.yaml`
+
+Generate a definition manifest file in JSON:
+
+`:> kubectl run nginx-pod --image=nginx:1.22.1 --port=80 --dry-run=client -o json > nginx-pod.json`
+
+Both the YAML and JSON definition files can serve as templates or can be loaded into the cluster respectively as such:
+
+`:> kubectl create -f nginx-pod.yaml`
+`:> kubectl create -f nginx-pod.json`
+
+Before advancing to more complex application deployment and management methods, become familiar with Pod operations with additional commands such as:
+
+| Command                                         | Action Description                                    |
+|-------------------------------------------------|-------------------------------------------------------|
+| `:> kubectl apply -f nginx-pod.yaml`            | Deploys a pod configuration defined in the `nginx-pod.yaml` file. |
+| `:> kubectl get pods`                           | Lists all pods in the current namespace.            |
+| `:> kubectl get pod nginx-pod -o yaml`          | Retrieves details of the `nginx-pod` in YAML format.|
+| `:> kubectl get pod nginx-pod -o json`          | Retrieves details of the `nginx-pod` in JSON format.|
+| `:> kubectl describe pod nginx-pod`             | Provides detailed information about the `nginx-pod`, including status, events, and resource usage.|
+| `:> kubectl delete pod nginx-pod`               | Deletes the specified pod, `nginx-pod`, from the cluster. |
+
+
+
+### Labels
+
+### Label Selectors
+
+### ReplicationControllers
+
+### ReplicaSets
+
+### Deployments
+
+### DaemonSets
+
+### Services
 
 ## 10. Authentication, Authroization, Admission Control
 
