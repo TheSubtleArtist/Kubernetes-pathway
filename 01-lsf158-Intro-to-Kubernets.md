@@ -1093,7 +1093,50 @@ We can access an API Server either directly by calling the respective API endpoi
 
 ### More kubectl
 
+kubectl allows us to manage local Kubernetes clusters like the Minikube cluster, or remote clusters deployed in the cloud.  
+Generally installed before installing and starting Minikube, but it can also be installed after the cluster bootstrapping step.
+
+A Minikube installation has its own kubectl CLI installed and ready to use.  
+However, it is somewhat inconvenient to use as the kubectl command becomes a subcommand of the minikube command.  
+Users would be required to type longer commands, such as `minikube kubectl -- <subcommand> <object-type> <object-name> -o --option`, instead of just `kubectl <subcommand> <object-type> <object-name> -o --option`.  
+While a simple solution would be to set up an alias, the recommendation is to run the kubectl CLI tool as a standalone installation.
+
+Once separately installed, kubectl receives its configuration automatically for Minikube Kubernetes cluster access.  
+However, in different Kubernetes cluster setups, we may need to manually configure the cluster access points and certificates required by kubectl to securely access the cluster.
+
+There are different methods that can be used to install kubectl listed in the [Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/#kubectl). For best results, it is recommended to ***keep kubectl within one minor version of the desired Kubernetes release***.
+
+Additional details about the kubectl command line client can be found in the [kubectl book](https://kubectl.docs.kubernetes.io/), the [Kubernetes official documentation](https://kubernetes.io/docs/reference/kubectl/), or its [GitHub repository](https://github.com/kubernetes/kubectl).
+
 ### Installing kubetcl on Linux
+
+To [install kubectl on Linux](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), follow the instructions below extracted from the official installation guide.
+
+Download and install the latest stable kubectl binary:
+
+    :> curl -LO "htt‌‌ps://dl.k8s.io/release/$(curl -L -s htt‌‌ps://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    :> sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+Where: ht‌tps://dl.k8s.io/release/stable.txt aims to display the latest Kubernetes stable release version.
+
+***NOTE:*** To download and set up a specific version of kubectl (such as v1.28.3) to be aligned with the Kubernetes version of the Minikube cluster, issue the following command instead:
+
+    :> curl -LO ht‌‌tps://dl.k8s.io/release/v1.28.3/bin/linux/amd64/kubectl
+
+The installed version can be verified with:
+
+    :> kubectl version --client
+
+A typical helpful post-installation configuration is to enable shell autocompletion for kubectl.  
+For bash shell it can be achieved by running the following sequence of commands:
+
+    :> sudo apt update && sudo apt install -y bash-completion
+
+    :> source /usr/share/bash-completion/bash_completion
+
+    :> source <(kubectl completion bash)
+
+    :> echo 'source <(kubectl completion bash)' >> ~/.bashrc
 
 ### Installing kubetcl on macOS
 
