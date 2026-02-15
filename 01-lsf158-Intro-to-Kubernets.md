@@ -1532,7 +1532,7 @@ Generate a definition manifest file in JSON:
 
 Both the YAML and JSON definition files can serve as templates or can be loaded into the cluster respectively as such:
 
-`:> kubectl create -f nginx-pod.yaml`
+`:> kubectl create -f nginx-pod.yaml`  
 `:> kubectl create -f nginx-pod.json`
 
 Before advancing to more complex application deployment and management methods, become familiar with Pod operations with additional commands such as:
@@ -1545,8 +1545,6 @@ Before advancing to more complex application deployment and management methods, 
 | `:> kubectl get pod nginx-pod -o json`          | Retrieves details of the `nginx-pod` in JSON format.|
 | `:> kubectl describe pod nginx-pod`             | Provides detailed information about the `nginx-pod`, including status, events, and resource usage.|
 | `:> kubectl delete pod nginx-pod`               | Deletes the specified pod, `nginx-pod`, from the cluster. |
-
-
 
 ### Labels
 
