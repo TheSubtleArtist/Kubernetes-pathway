@@ -1707,7 +1707,7 @@ A nested object, such as the Pod being part of a `Deployment`, retains its metad
 In ***spec.template.spec***, we define the desired state of the Pod.  
 Our Pod creates a single container running the nginx:1.20.2 image from Docker Hub.
 
-The above definition manifest, if stored in def-deploy.yaml file, is loaded into the cluster to run a set of three identical Pod replicas and their associated container image, together with their managing ReplicaSet.  
+The above definition manifest, if stored in `def-deploy.yaml` file, is loaded into the cluster to run a set of three identical Pod replicas and their associated container image, together with their managing ReplicaSet.  
 While `create` is exemplified below, advanced Kubernetes practitioners may opt to use `apply` instead:
 
 `:> kubectl create -f def-deploy.yaml`
@@ -1846,10 +1846,17 @@ While `create` is exemplified below, advanced Kubernetes practitioners may opt t
 | `:> kubectl delete ds fluentd-agent`                                                          | Deletes the specified DaemonSet, `fluentd-agent`, from the cluster.                                   |
 | `:> kubectl get ds,po -l k8s-app=fluentd-agent`                                             | Retrieves all DaemonSets and pods with the label `k8s-app=fluentd-agent`.                             |
 
-
-
-
 ### Services
+
+A containerized application deployed to a Kubernetes cluster may need to reach other such applications, or it may need to be accessible to other applications and possibly clients.  
+This is problematic because the container does not expose its ports to the cluster's network, and it is not discoverable either.  
+The solution would be a simple port mapping, as offered by a typical container host.  
+However, due to the complexity of the Kubernetes framework, such a simple port mapping is not that "simple".  
+The solution is much more sophisticated, with the involvement of the kube-proxy node agent, IP tables, routing rules, cluster DNS server, all collectively implementing a micro-load balancing mechanism that exposes a container's port to the cluster's network, even to the outside world if desired.  
+This mechanism is called a Service, and it is the recommended method to expose any containerized application to the Kubernetes network.  
+The benefits of the Kubernetes Service becomes more obvious when exposing a multi-replica application, when multiple containers running the same image need to expose the same port.  
+This is where the simple port mapping of a container host would no longer work, but the Service would have no issue implementing such a complex requirement.  
+More will be discussed in a later chapter.
 
 ## 10. Authentication, Authroization, Admission Control
 
